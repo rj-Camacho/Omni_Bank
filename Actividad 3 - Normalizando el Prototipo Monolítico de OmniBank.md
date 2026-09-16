@@ -1,49 +1,45 @@
-# Actividad 3: Normalizando el Prototipo Monolítico de OmniBank
+# Day 03 Answer Key — Normalizando el Prototipo Monolítico de OmniBank
 
-## 1NF
+## Expected Result
 
-| transaccion_id | fecha_tx   | cliente_tax_id | cliente_nombre | cliente_correo                      | cliente_telefono | cuenta_numero |
-| -------------- | ---------- | -------------- | -------------- | ----------------------------------- | ---------------- | ------------- |
-| TX-0001        | 2026-07-20 | TAX-9911       | Roberto Soto   | [rob@mail.com](mailto:rob@mail.com) | 555-9011         | CTA-100       |
-| TX-0002        | 2026-07-21 | TAX-9911       | Roberto Soto   | [rob@mail.com](mailto:rob@mail.com) | 555-9011         | CTA-100       |
+El estudiante deberá haber transformado el monolito de la tabla desordenada en un esquema relacional en **3NF** consistente en 4 tablas: `Clientes`, `Cuentas`, `Sucursales`, y `Transacciones`, eliminando las redundancias de texto y datos multi-valorados y asegurando el uso de llaves primarias (PK) y llaves foráneas (FK) con dependencias transitivas resueltas.
 
-| moneda | tipo_cuenta | saldo_actual | monto_tx | sucursal_cod | sucursal_direccion |
-| ------ | ----------- | -----------: | -------: | ------------ | ------------------ |
-| USD    | Checking    |      1500.00 |  +500.00 | S-CDMX       | Av. Juárez #100    |
-| USD    | Checking    |      1300.00 |  -200.00 | S-CDMX       | Av. Juárez #100    |
+## Reference Solution
 
-## 2NF
+**1. Corrección a 1NF (Atomicidad de Campos):**
 
-cliente_tax_id, cliente_nombre, cliente_correo y cliente_telefono describen al cliente.
+- Desarmar `cliente_nombre_y_contacto` en columnas individuales: `nombre`, `email`, `telefono`.
+- Desarmar `moneda_y_tipo` en: `moneda` y `tipo_cuenta`.
 
-cuenta_numero, moneda, tipo_cuenta y saldo_actual describen a la cuenta.
+**2. Separación Relacional en 3NF:**
 
-sucursal_codigo y sucursal_direccion describen a la sucursal.
+```text
+[Sucursales] (3NF - Elimina redundancia transitiva de direcciones repetidas en cada venta)
+- sucursal_id (PK)      -- Ej: S-CDMX
+- direccion             -- Ej: Av. Juárez #100
 
-## 3NF
+[Clientes] (3NF - Elimina duplicidad masiva del cliente en cada transacción o cuenta)
+- cliente_id (PK/TaxID) -- Ej: TAX-9911 (O preferentemente UUID en práctica real)
+- nombre                -- Ej: Roberto Soto
+- email                 -- Ej: rob@mail.com
+- telefono              -- Ej: 555-9011
 
-### Tabla 1 — Clientes
+[Cuentas] (3NF - Dependencia directa de Cuenta a Cliente y Sucursal de apertura)
+- cuenta_numero (PK)    -- Ej: CTA-100
+- cliente_id (FK -> Clientes)
+- sucursal_id (FK -> Sucursales)
+- moneda                -- Ej: USD
+- tipo_cuenta           -- Ej: Checking
+- saldo_actual          -- Ej: 1300.00
 
-| cliente_tax_id (PK) | nombre       | correo                              | telefono |
-| ------------------- | ------------ | ----------------------------------- | -------- |
-| TAX-9911            | Roberto Soto | [rob@mail.com](mailto:rob@mail.com) | 555-9011 |
+[Transacciones] (3NF - Registro atómico exclusivo del evento financiero)
+- transaccion_id (PK)   -- Ej: TX-0001, TX-0002
+- cuenta_numero (FK -> Cuentas)
+- fecha_tx
+- monto_tx
+```
 
-### Tabla 2 — Sucursales
+## Common Valid Variations
 
-| sucursal_codigo (PK) | direccion       |
-| -------------------- | --------------- |
-| S-CDMX               | Av. Juárez #100 |
-
-### Tabla 3 — Cuentas
-
-| cuenta_numero (PK) | cliente_tax_id (FK) | moneda | tipo_cuenta | saldo_actual | sucursal_codigo (FK) |
-| ------------------ | ------------------- | ------ | ----------- | -----------: | -------------------- |
-| CTA-100            | TAX-9911            | USD    | Checking    |      1500.00 | S-CDMX               |
-| CTA-100            | TAX-9911            | USD    | Checking    |      1300.00 | S-CDMX               |
-
-### Tabla 4 — Transacciones
-
-| transaccion_id (PK) | fecha_tx   | cuenta_numero (FK) | monto_tx |
-| ------------------- | ---------- | ------------------ | -------: |
-| TX-0001             | 2026-07-20 | CTA-100            |  +500.00 |
-| TX-0002             | 2026-07-21 | CTA-100            |  -200.00 |
+- Los estudiantes pueden elegir agregar una llave foránea de sucursal directamente sobre `Transacciones` (`sucursal_id_tx`) en caso de interpretar que los retiros y depósitos individuales se realizan en sucursales físicas diferentes a la sucursal original donde se abrió la cuenta bancaria. Esta es una solución perfectamente válida e incluso habitual en la banca transaccional distribuida (ATM/Cajas).
+- Sustituir los códigos como `TAX-9911` y `CTA-100` por una columna explícita de identificador `UUID` para prepararse para la implementación en SQL de la semana entrante.
