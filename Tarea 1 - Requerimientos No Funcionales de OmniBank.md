@@ -1,18 +1,19 @@
-# Tarea 1: Requerimientos No Funcionales de OmniBank
+# Day 01 Answer Key — Requerimientos No Funcionales de OmniBank
 
-## Requerimientos no funcionales
+## Expected Result
 
-### 1. Consistencia del saldo
+El estudiante debe haber identificado las tres reglas de consistencia mencionadas en la actividad y el slack del CTO.
 
-- **Requerimiento:** La base de datos debe impedir que el saldo de cualquier cuenta tome un valor negativo tras cualquier transacción o modificación, asegurando que la cuenta nunca entre en sobregiro no autorizado directamente en el motor de datos.
-- **Traducción técnica:** Restricción de verificación.
+## Reference Solution
 
-### 2. Auditoría y conservación de datos
+- **NFR1 (Consistencia Matemática):** La base de datos debe impedir que las cuentas queden con saldos en números negativos.
+- **NFR2 (Auditoría / Soft Delete):** La base de datos debe impedir la eliminación física de un registro de cliente, y en su lugar debe poder marcarse como inactivo.
+- **NFR3 (Timestamps):** La base de datos debe registrar y actualizar automáticamente la fecha y hora exacta (`updated_at`) cada vez que el registro de una cuenta es modificado.
 
-- **Requerimiento:** La base de datos debe prohibir la eliminación física de los registros de clientes una vez insertados, obligando a manejar la desactivación mediante un estado lógico para garantizar el cumplimiento de normativas de auditoría financiera.
-- **Traducción técnica:** Columna de estado booleano y restricción de permisos contra sentencias DELETE.
+## Common Valid Variations
 
-### 3. Rastreo temporal
+- "La tabla de clientes debe tener un campo booleano 'is_active'." (Esto ya es pensar en SQL, lo cual es muy bueno, aunque el requerimiento en lenguaje natural es suficiente).
 
-- **Requerimiento:** La base de datos debe capturar y actualizar automáticamente la fecha y hora exacta en que se realiza cualquier modificación en los registros de la tabla de cuentas.
-- **Traducción técnica:** Columna temporal con valor por defecto y actualización automática.
+## Common Mistakes
+
+- Confundir requerimientos funcionales con no funcionales. Por ejemplo, decir que "Un requerimiento es guardar el nombre del cliente", lo cual es Funcional (RF), no un Requerimiento No Funcional (NFR).
