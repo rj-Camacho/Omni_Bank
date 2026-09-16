@@ -1,4 +1,28 @@
-# Tarea 3: Análisis de Dependencias Transitivas y Optimización Consciente en OmniBank
+# Day 03 Answer Key — Análisis de Dependencias Transitivas y Optimización Consciente en OmniBank
 
-El auditor junior tiene toda la razón desde una perspectiva académica pura: almacenar el `saldo_actual` es, en efecto, conservar un dato derivado que viola la estricta Tercera Forma Normal (3NF) al introducir redundancia funcional. Sin embargo, en un entorno OLTP de escala empresarial, aplicar `SUM(monto)` en tiempo real sobre historiales de hasta 250,000 transacciones cada vez que un cliente revisa su banca móvil resultaría en un cuello de botella insostenible. Este enfoque "puro" obligaría a la base de datos a realizar escaneos masivos en disco y operaciones aritméticas intensivas, disparando el consumo de CPU y multiplicando la latencia (pasando de tiempos de respuesta de milisegundos a posibles *timeouts* de varios segundos). Bajo una alta concurrencia de miles de usuarios consultando sus cuentas simultáneamente, el servidor colapsaría rápidamente, incumpliendo gravemente nuestros requerimientos no funcionales (NFRs) de disponibilidad y rendimiento.
-Por este motivo, en OmniBank mantenemos deliberadamente el campo `saldo_actual` como una **desnormalización controlada**, priorizando el rendimiento de lectura crítico para la experiencia del usuario. Para garantizar que esta redundancia jamás derive en inconsistencias financieras (el principal riesgo de violar 3NF), la arquitectura delegará la integridad a las propiedades ACID del motor de base de datos. Implementaremos bloqueos transaccionales a nivel de fila (por ejemplo, `SELECT ... FOR UPDATE`) combinados con *Triggers* o procedimientos almacenados que envuelvan toda operación de movimiento de dinero. Esto asegura que la inserción de una fila en la tabla `Transacciones` y la actualización matemática del `saldo_actual` en la tabla `Cuentas` ocurran siempre dentro de una misma transacción atómica indivisible: o ambas operaciones se guardan con éxito simultáneamente, o el motor hace un *rollback* completo, garantizando integridad absoluta con tiempos de respuesta óptimos.
+## Expected Result
+
+El estudiante emitirá un dictamen arquitectónico comprensivo que reconoce que la columna `saldo_actual` es, en estricto rigor purista, un dato derivado (y por tanto infractor técnico de la 3NF canónica), pero argumentando sólidamente su conservación y permanencia obligada como una **desnormalización controlada de grado empresarial** motivada por necesidades extremas de rendimiento (OLTP).
+
+## Reference Solution
+
+### 1. Respuesta al Auditor (Evaluación Teórica)
+
+El auditor junior **tiene la razón desde una perspectiva puramente académica y teórica de normalización**. En una base de datos en 3NF estricta y absoluta, no se deberían almacenar valores derivados que puedan calcularse a partir de otros campos transaccionales (como sería un `SUM(monto)` del historial), dado que se añade riesgo de inconsistencia al duplicar o derivar estados sin dependencia funcional directa indivisible.
+
+### 2. Dictamen de Arquitectura (La Realidad del Rendimiento Empresarial - OLTP)
+
+En sistemas bancarios o comerciales de escala empresarial con volúmenes intensivos, calcular el saldo al vuelo (`SUM(monto)`) cada vez que un usuario consulta un ATM, hace un pago en un punto de venta (POS), o abre su aplicación bancaria generaría los siguientes problemas catastróficos:
+
+- **Colapso del CPU e I/O de disco**: Escanear e indexar 250,000 filas por consulta masiva (incluso en memoria con Índices) destruiría por completo el tiempo de respuesta del servidor relacional al escalar a millones de cuentas concurrentes (fallando los NFRs de latencia < 10ms).
+- **Incapacidad de bloqueo rápido para salvedades concurrentes**: Al transferir dinero es imperativo verificar inmediatamente en microsegundos que `saldo_actual >= monto_a_retirar` sin latencias de agregación previa que induzcan a condiciones de carrera transaccional o fraudes por desajustes de concurrencia temporal.
+- **Solución y Mitigación Empresarial**: Mantenemos `saldo_actual` como una **desnormalización controlada**. Para evitar que este saldo se desajuste en relación con las filas reales de `Transacciones`, delegamos al motor PostgreSQL la exigencia estricta de actualizar el saldo única y exclusivamente mediante **Procedimientos Almacenados atómicos** o **Triggers transaccionales** blindados bajo propiedades ACID con bloqueos de fila (`FOR UPDATE`), prohibiendo alteraciones manuales en la tabla o el cálculo errante en la capa del Frontend.
+
+## Common Valid Variations
+
+- Los alumnos pueden argumentar que para optimizaciones analíticas extremadamente masivas con billones de filas también se podrían utilizar **Vistas Materializadas** (`MATERIALIZED VIEWS`) en lugar de columnas estáticas directas, aunque aceptando que estas conllevan retardos en refrescos en tiempo real intolerables para cajeros ATM (consistencia eventual vs fuerte).
+
+## Common Mistakes
+
+- **Negar el argumento teórico**: Afirmar categóricamente que el auditor está mintiendo y que un saldo es un dato "primitivo y no derivado" sin reconocer que por álgebra transaccional su valor sí se compone por el flujo histórico de ingresos y egresos.
+- **Optar por eliminar la columna en aras de la pureza 3NF sin pensar en la escalabilidad del mundo real**: Esta es la trampa académica más peligrosa en entrevistas técnicas y diseño empresarial: descuidar por completo los cuellos de botella del CPU del servidor de datos al modelar ciegamente bajo dogmas universitarios inflexibles.
