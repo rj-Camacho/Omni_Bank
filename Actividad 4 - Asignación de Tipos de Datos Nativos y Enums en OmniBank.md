@@ -14,7 +14,6 @@ CREATE DOMAIN correo_electronico AS VARCHAR(150);
 ```
 
 ## Cliente
-
 - id_cliente: PK UUID
 - nombre_completo
 - correo electronico: VARCHAR
@@ -24,7 +23,6 @@ CREATE DOMAIN correo_electronico AS VARCHAR(150);
 - is_active: Boolean
 
 ## Cuentas
-
 - id_cuenta: PK UUID
 - cliente_id: FK UUID
 - numero_cuenta: VARCHAR
@@ -35,7 +33,6 @@ CREATE DOMAIN correo_electronico AS VARCHAR(150);
 - updated_at: Timestamp
 
 ## Transacciones
-
 - id_transacciones: UUID
 - cuenta_origen_id: UUID
 - cuenta_destino_id: UUID
