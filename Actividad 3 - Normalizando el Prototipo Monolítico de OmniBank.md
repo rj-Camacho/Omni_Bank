@@ -2,25 +2,15 @@
 
 ## 1NF
 
-| transaccion_id | fecha_tx   | cliente_tax_id | cliente_nombre |
-| -------------- | ---------- | -------------- | -------------- |
-| TX-0001        | 2026-07-20 | TAX-9911       | Roberto Soto   |
-| TX-0002        | 2026-07-21 | TAX-9911       | Roberto Soto   |
+| transaccion_id | fecha_tx   | cliente_tax_id | cliente_nombre | cliente_correo                      | cliente_telefono | cuenta_numero |
+| -------------- | ---------- | -------------- | -------------- | ----------------------------------- | ---------------- | ------------- |
+| TX-0001        | 2026-07-20 | TAX-9911       | Roberto Soto   | [rob@mail.com](mailto:rob@mail.com) | 555-9011         | CTA-100       |
+| TX-0002        | 2026-07-21 | TAX-9911       | Roberto Soto   | [rob@mail.com](mailto:rob@mail.com) | 555-9011         | CTA-100       |
 
-| cliente_correo                      | cliente_telefono | cuenta_numero |
-| ----------------------------------- | ---------------- | ------------- |
-| [rob@mail.com](mailto:rob@mail.com) | 555-9011         | CTA-100       |
-| [rob@mail.com](mailto:rob@mail.com) | 555-9011         | CTA-100       |
-
-| moneda | tipo_cuenta | saldo_actual | monto_tx |
-| ------ | ----------- | -----------: | -------: |
-| USD    | Checking    |      1500.00 |  +500.00 |
-| USD    | Checking    |      1300.00 |  -200.00 |
-
-| sucursal_cod | sucursal_direccion |
-| ------------ | ------------------ |
-| S-CDMX       | Av. Juárez #100    |
-| S-CDMX       | Av. Juárez #100    |
+| moneda | tipo_cuenta | saldo_actual | monto_tx | sucursal_cod | sucursal_direccion |
+| ------ | ----------- | -----------: | -------: | ------------ | ------------------ |
+| USD    | Checking    |      1500.00 |  +500.00 | S-CDMX       | Av. Juárez #100    |
+| USD    | Checking    |      1300.00 |  -200.00 | S-CDMX       | Av. Juárez #100    |
 
 ## 2NF
 
