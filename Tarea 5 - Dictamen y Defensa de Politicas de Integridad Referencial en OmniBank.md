@@ -1,23 +1,42 @@
-# Tarea 5: Dictamen y Defensa de Políticas de Integridad Referencial en OmniBank
+# Day 05 Answer Key — Dictamen y Defensa de Políticas de Integridad Referencial en OmniBank
 
-**A:** Equipo de Pruebas Automáticas (QA) y Comité de Desarrollo Backend
+## Expected Result
 
-**DE:** Arquitecto Principal de Datos de OmniBank
+El estudiante confeccionará un dictamen ejecutivo contundente rechazando de plano el peligroso pedimento de implementar `ON DELETE CASCADE` en las relaciones transaccionales del banco, sosteniéndose en la gravedad de la pérdida irreversible de registros fiscales contables e instruyendo a los equipos en el uso obligado y estandarizado de la **Baja Lógica** (`is_active`).
 
-**ASUNTO:** Rechazo definitivo a la implementación de `ON DELETE CASCADE` en entornos de base de datos
+## Reference Solution
 
-## 1. Riesgo Operativo y Catástrofe en Producción
+### 1. El Riesgo Catastrófico en Producción (`ON DELETE CASCADE`)
 
-La solicitud de implementar `ON DELETE CASCADE` en las llaves foráneas que conectan `core.customers`, `core.accounts` y `core.transactions` queda **rotundamente rechazada**. En un motor financiero, habilitar cascadas destructivas transforma cualquier instrucción individual o error operativo en un fallo sistémico catastrófico: la ejecución accidental o maliciosa de un `DELETE` sobre una sola fila de cliente desencadenaría una reacción en cadena que borraría al instante sus cuentas, límites de crédito e historiales contables. Perder este grafo de datos en milisegundos destruye la trazabilidad de los fondos y genera un agujero contable irrecuperable. La regla `ON DELETE RESTRICT` actúa precisamente como el freno de emergencia necesario a nivel de motor para garantizar la inmutabilidad de la información.
+El argumento presentado por el equipo de testing para agilizar limpiezas automatizadas incurre en un gravísimo vicio metodológico: **nunca se debe relajar la seguridad o integridad de un modelo productivo para complacer la pereza de las pruebas unitarias automáticas** (donde muy bien pueden limpiar el entorno en orden inverso o usar sentencias `TRUNCATE ... CASCADE` aisladas al ambiente temporal efímero).
+Habilitar una restricción `ON DELETE CASCADE` sobre `core.customers` o `core.accounts` convertiría cualquier descuido de un operador administrativo del sistema o intento malintencionado en producción en un arma destructiva masiva que fulmina inexorablemente sin previa confirmación de seguridad en una sola fracción de segundo cientos de miles de transferencias, créditos activos y cobros bancarios vinculados transaccionalmente al sujeto o entidad en disco.
 
-## 2. Inviolabilidad del Rastro Fiscal y Normativa Internacional
+### 2. Obligación de Auditoría Contable y Rastro Legal Fiscal
 
-Desde el marco legal y regulatorio internacional (como SOX, marcos PCI-DSS y legislaciones tributarias locales), las tablas transaccionales como `core.transactions` constituyen un libro mayor contable inalterable. Los registros de movimientos monetarios no pertenecen únicamente a la vista privada del usuario, sino que respaldan impuestos, auditorías de lavado de dinero y la conciliación bancaria del balance general. Un comando `DELETE` físico sobre movimientos históricos —incluso si el cliente decide rescindir su contrato comercial— constituye una infracción legal grave por alteración y destrucción de libros contables. Todo centavo que haya ingresado o salido de OmniBank debe permanecer registrado permanentemente.
+En el ámbito financiero profesional y bajo leyes mundiales de cumplimiento tributario e inversión auditada (como las normas Sarbanes-Oxley [SOX], regulaciones antiblanqueo [AML], o el secreto fiscal bancario), un registro histórico de transacción y movimiento patrimonial es un documento legal civil inviolable, inalterable y perpetuo por mandato público legal. Borrar ciegamente esas filas del motor (`DELETE FROM core.transactions`) ante la baja de una persona rompe el balance de comprobación general del libro contable mayor de OmniBank, derivando en sanciones multimillonarias, auditorías desaprobadas e intervenciones de organismos reguladores contra el banco al destruir irremplazablemente la evidencia real transaccional monetaria del sistema.
 
-## 3. Directriz Oficial: Ciclo de Vida mediante Bajas Lógicas (***Soft Delete***)
+### 3. Instrucciones sobre el Estándar Empresarial: La Baja Lógica
 
-Para reflejar el término de la relación comercial con un usuario o la cancelación de un producto, la arquitectura del banco exige el uso de **Bajas Lógicas (***Soft Delete***)**, prohibiendo la eliminación física en tablas productivas. La baja y mantenimiento del entorno deben regirse bajo los siguientes lineamientos:
+Para asegurar armonía en los procesos operacionales de nuestro banco de nivel mundial, instruiremos la adopción irrestricta de los siguientes pasos cuando una cuenta o usuario sea removida de las actividades operacionales del mercado:
 
-- **Desactivación de Clientes:** Ante la salida de un usuario, se actualizará su indicador de estado a inactivo (`is_active = FALSE`). El registro de sus datos personales y su `tax_id` permanecerá intacto para fines de auditoría.
-- **Cierre de Cuentas:** Las cuentas liquidadas pasarán a un estado formal de cierre (`status = 'CLOSED'`), previa verificación de que su saldo actual sea estrictamente cero (`saldo_actual = 0.00`).
-- **Protocolo para Entornos de Pruebas (QA):** El equipo de QA no debe adaptar la arquitectura de producción para resolver fricciones de limpieza en desarrollo. Para las pruebas de integración se deben emplear scripts de reajuste de base de datos (`TRUNCATE ... CASCADE` exclusivamente en esquemas de *sandbox/testing* aislados) o diseñar escenarios de prueba que consuman la API de baja lógica mediante `UPDATE`.
+- **Jamás se emitirá una orden `DELETE` en caliente sobre tablas maestras transaccionales ni personales en nóminas comerciales**. El borrado físico queda terminantemente bloqueado y proscrito para las aplicaciones clientes, resguardado tras nuestro muro de hierro `ON DELETE RESTRICT` programado dentro en los constraints relacionales del DDL.
+- Se implementa el proceso técnico de **Baja Lógica**: la inactivación oficial del usuario o el congelamiento final del cobro se ejecuta alterando y actualizando pacíficamente las banderas booleanas no funcionales proyectadas especialmente en nuestro esquema DDL en los pasados talleres:
+
+```sql
+-- Instrucción estándar legítima ante un cierre bancario de un cliente comercial:
+UPDATE core.customers SET is_active = false WHERE customer_id = 'c13c7f99-...';
+
+-- Las cuentas asociadas cesan actividad cambiándose equivalentemente en la base:
+UPDATE core.accounts SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE customer_id = 'c13c7f99-...';
+```
+
+- Al conservarse las celdas en el disco duro transaccional resguardo tras `is_active = false`, ni un solo reporte histórico analítico contable sufrirá pérdidas computacionales transaccionales ante inspecciones tributario-financieras.
+
+## Common Valid Variations
+
+- Sostener o añadir al dictamen que las bajas físicas en caliente o borrados masivos de clientes, además del riesgo auditado, también acarrearían bloqueos intensos transaccionales por concurrencia (`Table/Row Exclusive Locks` masivos durante la purga en cascada) sobre el motor OLTP de PostgreSQL en medio de picos laborales operativos diarios.
+
+## Common Mistakes
+
+- **Aceptar torpe o resignadamente conceder al equipo de testing el `ON DELETE CASCADE` en las tablas maestras de DDL** "solo para ayudarles un poco si prometen usarlo con cuidado". Esto reprobatoria de tajo cualquier evaluación seria ante comités arquitectónicos en el sector financiero corporativo internacional por negligente complicidad en la pérdida potencial del patrimonio documental contable.
+- **Olvidar mencionar el término industrial exacto "Baja Lógica" o su traducción funcional práctica** (como las banderas booleanas `is_active = false` o columnas equivalentes referenciales `deleted_at IS NOT NULL` comunes en ORMs contemporáneos).
