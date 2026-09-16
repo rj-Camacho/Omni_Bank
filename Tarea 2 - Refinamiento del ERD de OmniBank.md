@@ -1,35 +1,36 @@
-# Tarea 2: Refinamiento del ERD de OmniBank
+# Day 02 Answer Key — Refinamiento del ERD de OmniBank
 
-[Tarea 2: Refinamiento del ERD de OmniBank](https://moodle.umsa.edu.mx/mod/assign/view.php?id=21786)
+## Expected Result
 
-**Comming:** aprendi a identificar nuevos detalles para las claves
+El ERD base de la actividad debe haber sido actualizado para incluir los tipos de datos en las llaves (UUID en lugar de enteros), constraints anotados (ej. saldos no negativos, UNIQUE para el tax_id), y las nuevas columnas extraídas de los NFRs del Día 1.
 
-## Entidad: Clientes
+## Reference Solution
 
-- `id_cliente` (PK): UUID (Identificador Aleatorio Universal)
-- `nombre_completo`: VARCHAR
-- `correo_electronico`: VARCHAR — *Constraint: UNIQUE (No puede repetirse)*
-- `telefono`: VARCHAR
-- `fecha_nacimiento`: DATE
-- `tax_id`: VARCHAR — *Constraint: UNIQUE (No puede repetirse)*
-- `is_active`: BOOLEAN — *Constraint: DEFAULT TRUE (Atributo de seguridad para Borrado Lógico / Soft Delete)*
+```text
+[Clientes] 1 ------------ N [Cuentas]
+- cliente_id (PK, UUID)       - cuenta_id (PK, UUID)
+- nombre                      - cliente_id (FK, UUID)
+- correo                      - moneda
+- telefono                    - tipo_cuenta
+- fecha_nacimiento            - saldo_actual (CHECK: >= 0)
+- tax_id (UNIQUE)             - limite_credito
+- is_active (Soft Delete)     - updated_at (Timestamp NFR)
 
-## Entidad: Cuentas
+                   (Cuenta Origen)
+[Cuentas] 1 ------------------------- N [Transacciones]
+                                          - transaccion_id (PK, UUID)
+                   (Cuenta Destino)       - from_account (FK, UUID -> Cuentas)
+[Cuentas] 1 ------------------------- N   - to_account (FK, UUID -> Cuentas)
+                                          - monto
+                                          - tipo_transaccion
+                                          - fecha_completada
+```
 
-- `id_cuenta` (PK): UUID (Identificador Aleatorio Universal)
-- `cliente_id` (FK): UUID — *Relación vinculada a Clientes(id_cliente)*
-- `numero_cuenta`: VARCHAR — *Constraint: UNIQUE*
-- `moneda`: VARCHAR (Ej. USD, EUR)
-- `tipo_cuenta`: VARCHAR (Checking, Savings, Credit)
-- `saldo_actual`: DECIMAL — *Constraint: CHECK (saldo_actual >= 0) (No puede ser negativo)*
-- `limite_credito`: DECIMAL
-- `updated_at`: TIMESTAMP — *Atributo de seguridad para auditoría de tiempo de actualización*
+## Common Valid Variations
 
-## Entidad: Transacciones
+- En lugar de `is_active`, el estudiante podría usar `deleted_at` (Timestamp), lo cual es otro patrón válido para Soft Deletes.
+- Anotar el tipo de dato como `GUID` (término general) en lugar de `UUID` (término específico de Postgres).
 
-- `id_transaccion` (PK): UUID (Identificador Aleatorio Universal)
-- `cuenta_origen_id` (FK): UUID — *Relación vinculada a Cuentas(id_cuenta)*
-- `cuenta_destino_id` (FK): UUID — *Relación vinculada a Cuentas(id_cuenta)*
-- `monto`: DECIMAL — *Constraint: CHECK (monto > 0)*
-- `tipo_transaccion`: VARCHAR (Depósito, Retiro, Transferencia)
-- `fecha_completada`: TIMESTAMP — *Constraint: DEFAULT CURRENT_TIMESTAMP*
+## Common Mistakes
+
+- **Error grave:** Olvidar que si la Llave Primaria (PK) cambia a UUID, automáticamente **todas las Llaves Foráneas (FK) que apunten a ella también deben ser UUID**. No puedes vincular un UUID con un Entero.
