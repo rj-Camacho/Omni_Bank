@@ -1,15 +1,32 @@
-# Actividad 1: Levantamiento de Requisitos de OmniBank
+# Day 01 Answer Key — Levantamiento de Requisitos de OmniBank
 
-## Base de datos
+## Expected Result
 
-### Entidades Identificadas:
+El estudiante debe haber identificado las tres entidades principales mencionadas en el texto y sus campos mínimos, así como la restricción de que el Tax ID no puede repetirse.
 
-- **Clientes:** Los usuarios que utilizan los servicios del banco.
-- **Cuentas:** Los productos financieros que un cliente puede abrir.
-- **Transacciones:** Los movimientos de dinero que ocurren dentro del sistema.
+## Reference Solution
 
-### Requerimientos funcionales
+**1. Lista de Entidades:**
 
-- **RF1 Información de clientes:** El sistema debe almacenar los datos personales de cada cliente, lo cual incluye obligatoriamente nombre completo, correo electrónico, número de teléfono, fecha de nacimiento y número de identificación fiscal.
-- **RF2 Información de cuenta:** El sistema debe permitir registrar una o múltiples cuentas asociadas a un cliente. De cada cuenta se debe guardar el número de cuenta, la moneda, el tipo de cuenta, el saldo actual y el límite de crédito.
-- **RF3 Registro de transacciones:** El sistema debe registrar de manera precisa cada movimiento de dinero, almacenando la cuenta de origen, la cuenta de destino, el monto, el tipo de transacción y la fecha y hora exacta en la que se completó.
+- Clientes (Customers)
+- Cuentas (Accounts)
+- Transacciones (Transactions)
+
+**2. Requerimientos Funcionales (RF):**
+
+- **RF1:** El sistema debe almacenar de los Clientes: nombre, correo, teléfono, fecha de nacimiento y Tax ID.
+- **RF2:** El sistema debe almacenar de las Cuentas: número de cuenta, moneda, tipo de cuenta, saldo actual y límite de crédito, y a qué cliente pertenecen.
+- **RF3:** El sistema debe almacenar de las Transacciones: cuenta origen, cuenta destino, monto, tipo de transacción y fecha/hora exacta.
+
+**3. Restricción de unicidad:**
+
+- El sistema no debe permitir que dos clientes tengan el mismo Tax ID o número de identificación fiscal (Debe ser `UNIQUE`).
+
+## Common Valid Variations
+
+- Los estudiantes pueden agregar "correo electrónico" como otra restricción de unicidad, lo cual es muy válido en sistemas reales, aunque el texto se enfoca en el Tax ID.
+
+## Common Mistakes
+
+- Extraer entidades como "Dinero" o "Bancos", las cuales no son tablas que vamos a modelar.
+- Tratar de escribir los nombres en formato SQL (`CREATE TABLE clientes...`) en lugar de extraer el concepto del negocio en lenguaje natural.
