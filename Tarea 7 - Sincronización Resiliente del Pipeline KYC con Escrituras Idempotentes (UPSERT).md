@@ -18,15 +18,11 @@ INSERT INTO core.customers (
 VALUES (
     '99999999-9999-9999-9999-999999999999', 'Carlos', 'Gomez', 'carlos.g@email.com', '555-8888', 'TAX-500', '1982-10-30'
 )
--- Si el email ya existe, el motor atrapa la colisión y desvía la orden a un UPDATE
 ON CONFLICT (email) 
 DO UPDATE SET 
-    -- EXCLUDED contiene los datos "frescos" que intentaban entrar.
-    -- Así actualizamos solo lo necesario, protegiendo el ID original y la fecha de alta.
     first_name = EXCLUDED.first_name,
     last_name  = EXCLUDED.last_name,
     phone      = EXCLUDED.phone
--- Devuelve instantáneamente el ID y el email final al microservicio
 RETURNING customer_id, email;
 
 ```
